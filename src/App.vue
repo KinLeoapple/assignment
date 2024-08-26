@@ -1,5 +1,6 @@
 <script setup>
 import {ref} from "vue";
+import logo from "@/assets/logo.png";
 
 const headerLeftBtn = ["Home", "Reading", "Community", "Reservation"];
 const headerRightBtn = ["Login"];
@@ -17,7 +18,9 @@ const changePage = (pageIndex) => {
     <header>
       <nav class="navbar navbar-expand-lg bg-body-secondary mt-3">
         <div class="container-fluid">
-          <div class="navbar-brand logo" @click="changePage(0)">Navbar</div>
+          <div class="navbar-brand logo" @click="changePage(0)">
+            <img width="48" height="48" :src="logo" alt="logo">
+          </div>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarBtn"
                   aria-controls="navbarBtn" :aria-expanded="collapse" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
