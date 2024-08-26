@@ -1,7 +1,7 @@
 <script setup>
-import banner1 from "@/assets/img/banner-1.jpg";
-import banner2 from "@/assets/img/banner-2.jpg";
-import banner3 from "@/assets/img/banner-3.jpg";
+import banner1 from "@/assets/img/banner/banner-1.jpg";
+import banner2 from "@/assets/img/banner/banner-2.jpg";
+import banner3 from "@/assets/img/banner/banner-3.jpg";
 import {ref} from "vue";
 
 const bannerList = [banner1, banner2, banner3];
