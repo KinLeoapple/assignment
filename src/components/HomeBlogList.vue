@@ -1,5 +1,5 @@
 <script setup>
-import {ref} from "vue";
+import {computed, ref} from "vue";
 import blogImg from "@/assets/img/img.jpg";
 import blogsJson from "@/assets/blogs/blogs.json";
 
@@ -10,7 +10,15 @@ const changeBlogs = (index) => {
   blogsIndex.value = index;
 }
 
-const buildPreViewText = (text) => {
+const blogs = computed(() => {
+  let blogsJsonSlice = blogsJson.slice(0)
+  if (blogsIndex.value === 0)
+    return blogsJsonSlice.sort((a, b) => new Date(b.date) - new Date(a.date));
+  else if (blogsIndex.value === 1)
+    return blogsJsonSlice.sort((a, b) => b.view - a.view);
+});
+
+const buildPreviewText = (text) => {
   const maxLength = 200;
   let previewText = text.substring(0, maxLength);
   if (text.length > maxLength) {
@@ -44,23 +52,18 @@ const buildPreViewText = (text) => {
 
       <!-- Blog List -->
       <div class="container-fluid">
-        <div class="row justify-content-between overflow-hidden bg-body-secondary rounded"
+        <div v-for="blog in blogs" class="row justify-content-between overflow-hidden bg-body-secondary rounded mb-3"
              style="cursor: pointer">
           <div class="col-3" style="padding-left: 0">
-            <div class="ratio ratio-16x9">
-              <img :src="blogImg" alt="">
-            </div>
+            <img class="blog-img" :src="blogImg" alt="">
           </div>
           <div class="col-9">
             <div class="card-body">
-              <h5 class="mt-2">Card title</h5>
-              <p class="">
-                {{
-                  buildPreViewText(`Some quick example text to build on the card title and make up the bulk of the card's
-                  content.Some quick example text to build on the card title and make up the bulk of the card's
-                  content.`)
-                }}
+              <h5 class="mt-2 text-truncate">{{ blog.title }}</h5>
+              <p class="fs-6">
+                {{ buildPreviewText(blog.content) }}
               </p>
+              <p class="fs-6">{{ new Date(blog.date).toLocaleString() }}</p>
             </div>
           </div>
         </div>
@@ -70,5 +73,9 @@ const buildPreViewText = (text) => {
 </template>
 
 <style scoped>
-
+.blog-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 </style>

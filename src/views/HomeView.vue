@@ -1,10 +1,10 @@
 <script setup>
-import Banner from "@/components/Banner.vue";
+import HomeBanner from "@/components/HomeBanner.vue";
 import HomeBlogList from "@/components/HomeBlogList.vue";
 </script>
 
 <template>
-  <Banner/>
+  <HomeBanner/>
   <HomeBlogList/>
 </template>
 
