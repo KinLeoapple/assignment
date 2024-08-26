@@ -1,47 +1,61 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+import {ref} from "vue";
+
+const headerLeftBtn = ["Home", "Reading", "Community", "Reservation"];
+const headerRightBtn = ["Login"];
+
+const collapse = ref(false);
+const currentPageIndex = ref(0);
+const changePage = (pageIndex) => {
+  currentPageIndex.value = pageIndex;
+}
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
+  <div class="container">
+    <!-- Page Header -->
+    <header>
+      <nav class="navbar navbar-expand-lg bg-body-secondary mt-3">
+        <div class="container-fluid">
+          <div class="navbar-brand logo" @click="changePage(0)">Navbar</div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarBtn"
+                  aria-controls="navbarBtn" :aria-expanded="collapse" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <!-- Header Buttons -->
+          <div class="collapse navbar-collapse justify-content-between" id="navbarBtn">
+            <!-- Left Button -->
+            <ul class="navbar-nav column-gap-3">
+              <li v-for="(btn, index) in headerLeftBtn" class="nav-item">
+                <button class="btn btn-sm" @click="changePage(index)">
+                  <span class="nav-link">{{ btn }}</span>
+                </button>
+              </li>
+            </ul>
+            <!-- Right Button -->
+            <ul class="navbar-nav column-gap-3">
+              <li v-for="(btn, index) in headerRightBtn" class="nav-item">
+                <button class="btn btn-sm" @click="changePage(headerLeftBtn.length + index)">
+                  <span class="nav-link">{{ btn }}</span>
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </header>
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
-  </header>
+    <!-- Page Content -->
+    <main>
 
-  <main>
-    <TheWelcome />
-  </main>
+    </main>
+  </div>
 </template>
 
 <style scoped>
-header {
-  line-height: 1.5;
-}
-
 .logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: pointer;
 }
 </style>
