@@ -1,5 +1,6 @@
 <script setup>
 import logo from "@/assets/logo.png";
+import {computed} from "vue";
 
 const headerLeftBtn = [
   {
@@ -25,6 +26,23 @@ const headerRightBtn = [
     path: "/login"
   }
 ];
+
+const accounts = computed(() => {
+  return JSON.parse(localStorage.getItem("accounts") || "[]");
+});
+
+const currentAccount = computed(() => {
+  return JSON.parse(localStorage.getItem("currentAccount") || "{'name': '', 'password': ''}");
+});
+
+const tryLogin = () => {
+  const account = accounts.value.find((account) => account.username === currentAccount.value.username);
+  if (account) {
+    return account.password === currentAccount.value.password;
+  } else {
+    return false;
+  }
+}
 </script>
 
 <template>
@@ -51,9 +69,17 @@ const headerRightBtn = [
         </ul>
         <!-- Right Button -->
         <ul class="navbar-nav column-gap-3">
-          <li v-for="btn in headerRightBtn" class="nav-item">
+          <!-- If Not Login -->
+          <li v-if="!tryLogin" v-for="btn in headerRightBtn" class="nav-item">
             <button class="btn btn-sm">
               <router-link :to="btn.path" class="nav-link" active-class="active">{{ btn.text }}</router-link>
+            </button>
+          </li>
+          <!-- If Login -->
+          <li v-else class="nav-item ">
+            <button class="btn btn-sm d-flex justify-content-center align-items-center">
+              <span class="border rounded-circle">{{ currentAccount.username.substring(0, 1).toLocaleUpperCase() }}</span>
+              <span class="nav-link">Logout</span>
             </button>
           </li>
         </ul>
