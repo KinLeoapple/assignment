@@ -1,6 +1,6 @@
 <script setup>
 import logo from "@/assets/logo.png";
-import {computed} from "vue";
+import {computed, onMounted, ref} from "vue";
 
 const headerLeftBtn = [
   {
@@ -27,22 +27,33 @@ const headerRightBtn = [
   }
 ];
 
+const isLogin = ref(false);
+
 const accounts = computed(() => {
   return JSON.parse(localStorage.getItem("accounts") || "[]");
 });
 
 const currentAccount = computed(() => {
-  return JSON.parse(localStorage.getItem("currentAccount") || "{'name': '', 'password': ''}");
+  return JSON.parse(localStorage.getItem("currentAccount") || '{"name": "", "password": ""}');
 });
 
 const tryLogin = () => {
   const account = accounts.value.find((account) => account.username === currentAccount.value.username);
   if (account) {
-    return account.password === currentAccount.value.password;
+    isLogin.value = account.password === currentAccount.value.password;
   } else {
-    return false;
+    isLogin.value = false;
   }
 }
+
+const logout = () => {
+  localStorage.removeItem("currentAccount");
+  isLogin.value = false;
+}
+
+onMounted(() => {
+  tryLogin();
+});
 </script>
 
 <template>
@@ -63,24 +74,28 @@ const tryLogin = () => {
         <ul class="navbar-nav column-gap-3">
           <li v-for="btn in headerLeftBtn" class="nav-item">
             <button class="btn btn-sm">
-              <router-link :to="btn.path" class="nav-link" active-class="active">{{ btn.text }}</router-link>
+              <router-link :to="btn.path" class="nav-link" active-class="active text-primary">{{ btn.text }}</router-link>
             </button>
           </li>
         </ul>
         <!-- Right Button -->
         <ul class="navbar-nav column-gap-3">
           <!-- If Not Login -->
-          <li v-if="!tryLogin" v-for="btn in headerRightBtn" class="nav-item">
+          <li v-if="!isLogin" v-for="btn in headerRightBtn" class="nav-item">
             <button class="btn btn-sm">
-              <router-link :to="btn.path" class="nav-link" active-class="active">{{ btn.text }}</router-link>
+              <router-link :to="btn.path" class="nav-link" active-class="active text-primary">{{ btn.text }}</router-link>
             </button>
           </li>
           <!-- If Login -->
-          <li v-else class="nav-item ">
-            <button class="btn btn-sm d-flex justify-content-center align-items-center">
-              <span class="border rounded-circle">{{ currentAccount.username.substring(0, 1).toLocaleUpperCase() }}</span>
-              <span class="nav-link">Logout</span>
+          <li v-else class="nav-item dropdown">
+            <button class="btn btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Account: {{ currentAccount.username }}
             </button>
+            <ul class="dropdown-menu">
+              <li @click="logout">
+                <a class="dropdown-item" style="cursor: pointer">Logout</a>
+              </li>
+            </ul>
           </li>
         </ul>
       </div>

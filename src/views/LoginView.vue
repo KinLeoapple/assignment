@@ -49,7 +49,7 @@ const submitForm = () => {
       if (tryLogin()) {
         storeCurrentAccount();
         clearForm();
-        router.push("/");
+        window.location.replace("/");
       } else {
         errors.value.password = "Password does not match";
       }

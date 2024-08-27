@@ -42,7 +42,7 @@ const buildPreviewText = (text) => {
             <ul class="navbar-nav column-gap-3">
               <li v-for="(btn, index) in homeBlogNavBtn" class="nav-item">
                 <button class="btn btn-sm" @click="changeBlogs(index)">
-                  <span class="nav-link">{{ btn }}</span>
+                  <span class="nav-link" :class="{'active text-primary': blogsIndex === index}">{{ btn }}</span>
                 </button>
               </li>
             </ul>
