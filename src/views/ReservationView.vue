@@ -3,6 +3,8 @@ import MemberReservationView from "@/views/MemberReservationView.vue";
 import PsychotherapistReservationView from "@/views/PsychotherapistReservationView.vue";
 import {computed, onMounted, ref} from "vue";
 
+document.head.getElementsByTagName("title")[0].innerText = "Reservation";
+
 const isMember = ref(false);
 
 const accounts = computed(() => {
@@ -16,7 +18,7 @@ const currentAccount = computed(() => {
 const checkMember = () => {
   const account = accounts.value.find((account) => account.username === currentAccount.value.username);
   if (account) {
-    isMember.value = account.role === 1;
+    isMember.value = account.role === "1";
   }
 }
 

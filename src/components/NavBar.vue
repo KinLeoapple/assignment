@@ -1,6 +1,9 @@
 <script setup>
 import logo from "@/assets/logo.png";
 import {computed, onMounted, ref} from "vue";
+import {useRouter} from "vue-router";
+
+const router = useRouter();
 
 const headerLeftBtn = [
   {
@@ -49,6 +52,7 @@ const tryLogin = () => {
 const logout = () => {
   localStorage.removeItem("currentAccount");
   isLogin.value = false;
+  router.push("/");
 }
 
 onMounted(() => {

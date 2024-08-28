@@ -5,7 +5,7 @@ const props = defineProps({
 </script>
 
 <template>
-  <div v-if="props.errorMsg" class="text-danger">{{ props.errorMsg }}</div>
+  <div v-if="props.errorMsg" class="alert alert-danger mt-2">{{ props.errorMsg }}</div>
 </template>
 
 <style scoped>
