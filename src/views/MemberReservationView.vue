@@ -1,18 +1,32 @@
 <script setup>
-import {computed, ref} from "vue";
-import starFill from "@/assets/img/star-fill.svg";
-import star from "@/assets/img/star.svg";
+import {computed, nextTick, ref} from "vue";
+import StarSvg from "@/components/StarSvg.vue";
+import StarFillSvg from "@/components/StarFillSvg.vue";
+import ReservationError from "@/components/ReservationError.vue";
+import RatingStar from "@/components/RatingStar.vue";
+import CheckSvg from "@/components/CheckSvg.vue";
+import WarningSvg from "@/components/WarningSvg.vue";
 
 const memberReservationBtn = ["Make Reservation", "My Reservation"];
 
 const psychotherapists = computed(() => {
   return JSON.parse(localStorage.getItem("accounts") || "[]").filter(account => account.role === "2");
 });
+
+const reservations = computed(() => {
+  return JSON.parse(localStorage.getItem("reservations") || '[]');
+});
+
 const list = ref(psychotherapists.value);
 
 const reservationIndex = ref(0);
 const changeBtnIndex = (index) => {
   reservationIndex.value = index;
+  if (index === 0) {
+    list.value = psychotherapists.value;
+  } else {
+    list.value = reservations.value;
+  }
 }
 
 const searchKeyword = ref({
@@ -20,11 +34,97 @@ const searchKeyword = ref({
 });
 
 const search = () => {
-  list.value = psychotherapists.value.filter((account) => account.username.includes(searchKeyword.value.keyword));
+  if (reservationIndex.value === 0) {
+    list.value = psychotherapists.value.filter((account) => account.username.includes(searchKeyword.value.keyword));
+  } else {
+    list.value = reservations.value.filter((reservation) => reservation.psychotherapist.includes(searchKeyword.value.keyword));
+  }
+}
+
+const setReservationPsychotherapists = (username) => {
+  reservationData.value.psychotherapist = username
+}
+
+const currentAccount = computed(() => {
+  return JSON.parse(localStorage.getItem("currentAccount") || '{"username": "", "password": ""}');
+});
+
+const reservationData = ref({
+  date: "",
+  time: "",
+  member: currentAccount.value.username,
+  psychotherapist: ""
+});
+
+const reservationErrors = ref({
+  date: null,
+  time: null,
+});
+
+const validateDate = () => {
+  if (new Date(reservationData.value.date + "T" + new Date().toTimeString()) - new Date() < 0) {
+    reservationErrors.value.date = "Date is not available";
+  } else {
+    reservationErrors.value.date = null;
+  }
+}
+
+const validateTime = (username) => {
+  const list = reservations.value.filter((reservation) => reservation.psychotherapist === username);
+  const bookings = list.filter((reservation) => reservation.date === reservationData.value.date && reservation.time === reservationData.value.time) || [];
+  const date = new Date().toDateString();
+  if (new Date(date + "T" + reservationData.value.time) - new Date() < 60 * 6 * 1000) { // Less than one hour
+    reservationErrors.value.time = "Time is not available";
+  } else if (bookings.length > 0) {
+    reservationErrors.value.time = "Time is not available";
+  } else {
+    reservationErrors.value.time = null;
+  }
+}
+
+const modalClose = ref();
+const makeReservation = () => {
+  validateDate(reservationData.value.psychotherapist);
+  validateTime(reservationData.value.psychotherapist);
+
+  if (!reservationErrors.value.date && !reservationErrors.value.time) {
+    try {
+      storeReservation();
+      clearForm();
+      nextTick(() => {
+        modalClose.value.click();
+      });
+    } catch (_) {
+
+    }
+  }
+}
+
+const storeReservation = () => {
+  reservations.value.push(reservationData.value);
+  localStorage.setItem("reservations", JSON.stringify(reservations.value));
+}
+
+const clearForm = () => {
+  reservationData.value.date = "";
+  reservationData.value.time = "";
+  reservationData.value.member = "";
+  reservationData.value.psychotherapist = "";
 }
 
 const computeRating = (username) => {
   // compute the rating from each reservation
+  const list = reservations.value.filter((reservation) => reservation.psychotherapist === username);
+  let total = 0;
+  for (const reservation of list) {
+    total += reservation.rate;
+  }
+  const rating = Math.floor(total / list.length);
+  if (!isNaN(rating)) {
+    return new Array(5).fill(0, 0, rating);
+  } else {
+    return new Array(5);
+  }
 }
 </script>
 
@@ -53,26 +153,79 @@ const computeRating = (username) => {
     </div>
   </nav>
 
-  <!-- List -->
+  <!-- Psychotherapists List or My Reservations List -->
   <div class="container-fluid border rounded p-2 d-flex flex-column">
-    <h1 class="font-monospace">Psychotherapists</h1>
+    <h1 v-if="reservationIndex === 0" class="font-monospace">Psychotherapists</h1>
+    <h1 v-else class="font-monospace">My Reservations</h1>
     <div class="container d-flex flex-column">
-      <div v-for="account in list" class="row justify-content-between overflow-hidden bg-body-secondary rounded mb-3 p-2">
+      <div v-for="item in list"
+           class="row justify-content-between overflow-hidden bg-body-secondary rounded mb-3 p-2">
         <div class="col">
           <div class="card-body">
-            <h5 class="mt-2 text-truncate font-monospace">{{ account.username }}</h5>
+            <h5 v-if="reservationIndex === 0" class="mt-2 text-truncate font-monospace">{{ item.username }}</h5>
+            <h5 v-else class="mt-2 text-truncate font-monospace">{{ item.psychotherapist }}</h5>
+            <!-- Display Date Time -->
+            <p v-if="reservationIndex === 1">{{ new Date(item.date + "T" + item.time).toLocaleString() }}</p>
             <!-- Display The Rating -->
-            <div>
-              <div>
-                <img :src="starFill" alt=""/>
+            <div v-if="reservationIndex === 0" class="d-flex gap-1">
+              <div v-for="key in computeRating(item.username)">
+                <StarFillSvg v-if="key === 0" style="fill: darkorange"/>
+                <StarSvg v-else style="fill: darkorange"/>
               </div>
             </div>
+            <!-- Rate The Reservation -->
+            <div v-else class="d-flex gap-1">
+              <RatingStar :reservation="item"/>
+              <CheckSvg style="fill: green" v-if="item.rate !== undefined"/>
+              <WarningSvg style="fill: orangered" v-else/>
+            </div>
             <div class="row justify-content-end">
-              <div class="d-grid gap-2 d-md-flex justify-content-md-end" style="padding: 0">
-                <button class="btn btn-primary">Make a Reservation</button>
+              <div v-if="reservationIndex === 0" class="d-grid gap-2 d-md-flex justify-content-md-end"
+                   style="padding: 0">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#reservationModal"
+                        @click="setReservationPsychotherapists(item.username)">Make a Reservation
+                </button>
+              </div>
+              <div v-else class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <CheckSvg style="fill: green" v-if="new Date() > new Date(item.date + 'T' + item.time)"/>
+                <WarningSvg style="fill: orangered" v-else/>
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reservation Modal -->
+  <div v-if="reservationIndex === 0" class="modal fade" tabindex="-1" id="reservationModal" data-bs-backdrop="static"
+       data-bs-keyboard="false"
+       aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Make a Reservation with {{ reservationData.psychotherapist }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                  ref="modalClose"
+                  @click="setReservationPsychotherapists('')"></button>
+        </div>
+        <div class="modal-body">
+          <div class="col">
+            <label for="datePicker" class="form-label">Pick a Date</label>
+            <input type="date" class="form-control" id="datePicker" v-model="reservationData.date">
+            <ReservationError :error-msg="reservationErrors.date"/>
+          </div>
+          <div class="col">
+            <label for="timePicker" class="form-label">Pick a Time</label>
+            <input type="time" class="form-control" id="timePicker" v-model="reservationData.time">
+            <ReservationError :error-msg="reservationErrors.time"/>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                  @click="setReservationPsychotherapists('')">Cancel
+          </button>
+          <button type="button" class="btn btn-primary" @click="makeReservation">Confirm</button>
         </div>
       </div>
     </div>

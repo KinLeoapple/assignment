@@ -11,14 +11,6 @@ const headerLeftBtn = [
     path: "/"
   },
   {
-    text: "Reading",
-    path: "/reading"
-  },
-  {
-    text: "Community",
-    path: "/community"
-  },
-  {
     text: "Reservation",
     path: "/reservation"
   }
@@ -37,7 +29,7 @@ const accounts = computed(() => {
 });
 
 const currentAccount = computed(() => {
-  return JSON.parse(localStorage.getItem("currentAccount") || '{"name": "", "password": ""}');
+  return JSON.parse(localStorage.getItem("currentAccount") || '{"username": "", "password": ""}');
 });
 
 const tryLogin = () => {
