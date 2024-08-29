@@ -2,9 +2,6 @@
 import AuthorizationLinkBox from "@/components/AuthorizationLinkBox.vue";
 import AuthorizationError from "@/components/AuthorizationError.vue";
 import {computed, ref} from "vue";
-import {useRouter} from "vue-router";
-
-const router = useRouter();
 
 document.head.getElementsByTagName("title")[0].innerText = "Login";
 
