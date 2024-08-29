@@ -1,5 +1,8 @@
 <script setup>
 import {computed, ref} from "vue";
+import RatingStar from "@/components/RatingStar.vue";
+import WarningSvg from "@/components/WarningSvg.vue";
+import CheckSvg from "@/components/CheckSvg.vue";
 
 const psychotherapistReservationBtn = ["Reservations"];
 
@@ -55,6 +58,21 @@ const search = () => {
   </nav>
 
   <!-- Reservations List -->
+  <div class="container-fluid border rounded p-2 d-flex flex-column">
+    <h1 class="font-monospace">Reservations</h1>
+    <div class="container d-flex flex-column">
+      <div v-for="reservation in list"
+           class="row justify-content-between overflow-hidden bg-body-secondary rounded mb-3 p-2">
+        <div class="col">
+          <div class="card-body">
+            <h5 class="mt-2 text-truncate font-monospace">{{ reservation.member }}</h5>
+            <!-- Display Date Time -->
+            <p>{{ new Date(reservation.date + "T" + reservation.time).toLocaleString() }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
