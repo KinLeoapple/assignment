@@ -117,7 +117,7 @@ const computeRating = (username) => {
   const list = reservations.value.filter((reservation) => reservation.psychotherapist === username);
   let total = 0;
   for (const reservation of list) {
-    total += reservation.rate;
+    total += reservation.rate || 0; // the number would be zero if the rate does not exist
   }
   const rating = Math.floor(total / list.length);
   if (!isNaN(rating)) {

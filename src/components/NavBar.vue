@@ -88,6 +88,9 @@ onMounted(() => {
               Account: {{ currentAccount.username }}
             </button>
             <ul class="dropdown-menu">
+              <li>
+                <router-link to="/profile" class="dropdown-item" style="cursor: pointer">Profile</router-link>
+              </li>
               <li @click="logout">
                 <a class="dropdown-item" style="cursor: pointer">Logout</a>
               </li>

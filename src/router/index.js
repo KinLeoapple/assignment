@@ -3,6 +3,7 @@ import HomeView from "@/views/HomeView.vue";
 import LoginView from "@/views/LoginView.vue";
 import RegisterView from "@/views/RegisterView.vue";
 import ReservationView from "@/views/ReservationView.vue";
+import ProfileView from "@/views/ProfileView.vue";
 
 const isLogin = () => {
     const accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
@@ -25,6 +26,18 @@ const routes = [
         path: '/reservation',
         name: 'Reservation',
         component: ReservationView,
+        beforeEnter: (to, from, next) => {
+            if (isLogin()) {
+                next();
+            } else {
+                next({ name: 'Login' });
+            }
+        }
+    },
+    {
+        path: '/profile',
+        name: 'Profile',
+        component: ProfileView,
         beforeEnter: (to, from, next) => {
             if (isLogin()) {
                 next();
