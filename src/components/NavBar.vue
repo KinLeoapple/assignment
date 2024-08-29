@@ -53,7 +53,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <nav class="navbar navbar-expand-lg bg-body-secondary rounded mt-3">
+  <nav class="navbar navbar-expand-lg bg-body-secondary rounded">
     <div class="container-fluid">
       <div>
         <router-link to="/" class="navbar-brand logo">

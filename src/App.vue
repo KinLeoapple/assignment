@@ -3,7 +3,7 @@ import NavBar from "@/components/NavBar.vue";
 </script>
 
 <template>
-  <div class="container">
+  <div class="container p-3">
     <!-- Page Header -->
     <header>
       <NavBar/>
