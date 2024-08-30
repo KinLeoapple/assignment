@@ -94,6 +94,7 @@ const makeReservation = () => {
       nextTick(() => {
         modalClose.value.click();
       });
+      location.reload();
     } catch (_) {
 
     }
