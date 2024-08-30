@@ -3,10 +3,11 @@ import AuthorizationLinkBox from "@/components/AuthorizationLinkBox.vue";
 import AuthorizationError from "@/components/AuthorizationError.vue";
 import {computed, ref} from "vue";
 import {useRouter} from "vue-router";
+import {checkStr} from "@/assets/js/checkStr.js";
 
 const router = useRouter();
 
-document.head.getElementsByTagName("title")[0].innerText = "Register";
+document.head.getElementsByTagName("title")[0].innerText = checkStr("Register");
 
 const accounts = computed(() => {
   return JSON.parse(localStorage.getItem("accounts") || "[]");

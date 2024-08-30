@@ -2,8 +2,9 @@
 import MemberReservationView from "@/views/MemberReservationView.vue";
 import PsychotherapistReservationView from "@/views/PsychotherapistReservationView.vue";
 import {computed, onMounted, ref} from "vue";
+import {checkStr} from "@/assets/js/checkStr.js";
 
-document.head.getElementsByTagName("title")[0].innerText = "Reservation";
+document.head.getElementsByTagName("title")[0].innerText = checkStr("Reservation");
 
 const isMember = ref(false);
 

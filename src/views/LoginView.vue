@@ -2,8 +2,9 @@
 import AuthorizationLinkBox from "@/components/AuthorizationLinkBox.vue";
 import AuthorizationError from "@/components/AuthorizationError.vue";
 import {computed, ref} from "vue";
+import {checkStr} from "@/assets/js/checkStr.js";
 
-document.head.getElementsByTagName("title")[0].innerText = "Login";
+document.head.getElementsByTagName("title")[0].innerText = checkStr("Login");
 
 const accounts = computed(() => {
   return JSON.parse(localStorage.getItem("accounts") || "[]");
