@@ -1,8 +1,5 @@
 <script setup>
 import {computed, ref} from "vue";
-import RatingStar from "@/components/RatingStar.vue";
-import WarningSvg from "@/components/WarningSvg.vue";
-import CheckSvg from "@/components/CheckSvg.vue";
 
 const psychotherapistReservationBtn = ["Reservations"];
 
