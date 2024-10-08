@@ -64,7 +64,7 @@ const validateRole = () => {
 const validateEmail = (blur) => {
   let reg = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
   if (!reg.test(formData.value.email)) {
-    if (blur) errors.value.email = "Email not valid";
+    if (blur) errors.value.email = "Email format is not valid";
   } else {
     errors.value.email = null;
   }
@@ -104,8 +104,8 @@ const validateConfirmPassword = (blur) => {
   }
 }
 
-const submitForm = () => {
-  validateName(true);
+const submitForm = async () => {
+  await validateName(true);
   validateRole();
   validateEmail(true);
   validatePassword(true);
@@ -123,6 +123,7 @@ const submitForm = () => {
           addDoc(collection(db, "users"), {
             username: formData.value.username,
             role: formData.value.role,
+            email: formData.value.email,
             password: hash(formData.value.password),
           }).then(() => {
             clearForm();
@@ -142,10 +143,9 @@ const submitForm = () => {
 
 const storeAccount = () => {
   return new Promise(resolve => {
-    createUserWithEmailAndPassword(auth, formData.value.email, formData.value.password)
+    createUserWithEmailAndPassword(auth, formData.value.email, hash(formData.value.password))
         .then(data => {
           console.log("Firebase Register Successful!");
-          console.log(data.currentUser);
           resolve(true);
         })
         .catch(error => {

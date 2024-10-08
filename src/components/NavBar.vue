@@ -2,6 +2,9 @@
 import logo from "@/assets/logo.png";
 import {computed, onMounted, ref} from "vue";
 import {useRouter} from "vue-router";
+import {collection, getDocs, query, where} from "firebase/firestore";
+import db from "@/firebase/db.js";
+import {getAuth, signInWithEmailAndPassword} from "firebase/auth";
 
 const router = useRouter();
 
@@ -32,11 +35,29 @@ const currentAccount = computed(() => {
   return JSON.parse(localStorage.getItem("currentAccount") || '{"username": "", "password": ""}');
 });
 
-const tryLogin = () => {
-  const account = accounts.value.find((account) => account.username === currentAccount.value.username);
-  if (account) {
-    isLogin.value = account.password === currentAccount.value.password;
-  } else {
+const tryLogin = async () => {
+  try {
+    const q = query(collection(db, "users"), where("username", "==", currentAccount.value.username));
+    const users = await getDocs(q);
+    if (users.size > 0) {
+      users.forEach((user) => {
+        if (user.data().username === currentAccount.value.username) {
+          signInWithEmailAndPassword(getAuth(), user.data().email, user.data().password)
+              .then(data => {
+                console.log("Firebase Login Successful!");
+                isLogin.value = true;
+              })
+              .catch(error => {
+                console.log(error.code);
+                isLogin.value = false;
+              });
+        } else {
+          isLogin.value = false;
+        }
+      });
+    }
+  } catch (e) {
+    console.error(e);
     isLogin.value = false;
   }
 }
@@ -70,7 +91,10 @@ onMounted(() => {
         <ul class="navbar-nav column-gap-3">
           <li v-for="btn in headerLeftBtn" class="nav-item">
             <button class="btn btn-sm">
-              <router-link :to="btn.path" class="nav-link" active-class="active text-primary">{{ btn.text }}</router-link>
+              <router-link :to="btn.path" class="nav-link" active-class="active text-primary">{{
+                  btn.text
+                }}
+              </router-link>
             </button>
           </li>
         </ul>
@@ -79,7 +103,10 @@ onMounted(() => {
           <!-- If Not Login -->
           <li v-if="!isLogin" v-for="btn in headerRightBtn" class="nav-item">
             <button class="btn btn-sm">
-              <router-link :to="btn.path" class="nav-link" active-class="active text-primary">{{ btn.text }}</router-link>
+              <router-link :to="btn.path" class="nav-link" active-class="active text-primary">{{
+                  btn.text
+                }}
+              </router-link>
             </button>
           </li>
           <!-- If Login -->
