@@ -3,6 +3,7 @@ import HomeView from "@/views/HomeView.vue";
 import LoginView from "@/views/LoginView.vue";
 import RegisterView from "@/views/RegisterView.vue";
 import ReservationView from "@/views/ReservationView.vue";
+import BlogView from "@/views/BlogView.vue";
 
 const isLogin = () => {
     const accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
@@ -42,6 +43,11 @@ const routes = [
         path: '/register',
         name: 'Register',
         component: RegisterView
+    },
+    {
+        path: '/blogs',
+        name: 'Blogs',
+        component: BlogView
     }
 ]
 

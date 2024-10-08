@@ -2,12 +2,18 @@
 import {computed, ref} from "vue";
 import blogImg from "@/assets/img/img.jpg";
 import blogsJson from "@/assets/blogs/blogs.json";
+import {useRouter} from "vue-router";
 
-const homeBlogNavBtn = ["Latest", "Top"];
+const router = useRouter();
+
+const homeBlogNavBtn = ["Latest", "Top", "More"];
 
 const blogsIndex = ref(0);
 const changeBlogs = (index) => {
   blogsIndex.value = index;
+  if (index === 2) {
+    router.push("/blogs");
+  }
 }
 
 const blogs = computed(() => {
