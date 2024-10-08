@@ -4,16 +4,39 @@ import LoginView from "@/views/LoginView.vue";
 import RegisterView from "@/views/RegisterView.vue";
 import ReservationView from "@/views/ReservationView.vue";
 import BlogView from "@/views/BlogView.vue";
+import {collection, getDocs, query, where} from "firebase/firestore";
+import db from "@/firebase/db.js";
+import {getAuth, signInWithEmailAndPassword} from "firebase/auth";
 
 const isLogin = () => {
-    const accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
-    const currentAccount = JSON.parse(localStorage.getItem("currentAccount") || '{"name": "", "password": ""}');
-    const account = accounts.find((account) => account.username === currentAccount.username);
-    if (account) {
-        return account.password === currentAccount.password;
-    } else {
-        return false;
-    }
+    return new Promise((resolve) => {
+        const currentAccount = JSON.parse(localStorage.getItem("currentAccount") || '{"username": ""}');
+        try {
+            const q = query(collection(db, "users"), where("username", "==", currentAccount.username));
+            getDocs(q).then(users => {
+                if (users.size > 0) {
+                    users.forEach((user) => {
+                        if (user.data().username === currentAccount.username) {
+                            signInWithEmailAndPassword(getAuth(), user.data().email, user.data().password)
+                                .then(() => {
+                                    console.log("Firebase Login Successful!");
+                                    resolve(true);
+                                })
+                                .catch(error => {
+                                    console.log(error.code);
+                                    resolve(false);
+                                });
+                        } else {
+                            resolve(false);
+                        }
+                    });
+                }
+            });
+        } catch (e) {
+            console.error(e);
+            resolve(false);
+        }
+    })
 }
 
 const routes = [
@@ -27,11 +50,13 @@ const routes = [
         name: 'Reservation',
         component: ReservationView,
         beforeEnter: (to, from, next) => {
-            if (isLogin()) {
-                next();
-            } else {
-                next({ name: 'Login' });
-            }
+            isLogin().then(r => {
+                if (r) {
+                    next();
+                } else {
+                    next({name: 'Login'});
+                }
+            })
         }
     },
     {

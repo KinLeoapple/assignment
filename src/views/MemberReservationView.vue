@@ -6,24 +6,40 @@ import ReservationError from "@/components/ReservationError.vue";
 import RatingStar from "@/components/RatingStar.vue";
 import CheckSvg from "@/components/CheckSvg.vue";
 import WarningSvg from "@/components/WarningSvg.vue";
+import {collection, getDocs, query, where} from "firebase/firestore";
+import db from "@/firebase/db.js";
 
 const memberReservationBtn = ["Make Reservation", "My Reservation"];
-
-const psychotherapists = computed(() => {
-  return JSON.parse(localStorage.getItem("accounts") || "[]").filter(account => account.role === "2");
-});
 
 const reservations = computed(() => {
   return JSON.parse(localStorage.getItem("reservations") || '[]');
 });
 
-const list = ref(psychotherapists.value);
+const findPsychotherapists = async () => {
+  try {
+    const q = query(collection(db, "users"), where("role", "==", "2"));
+    const psychotherapists = await getDocs(q);
+    let list = [];
+    psychotherapists.forEach(p => {
+      list.push({
+        username: p.data().username,
+        role: p.data().role,
+        email: p.data().email,
+      })
+    });
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+}
+
+const list = ref(findPsychotherapists);
 
 const reservationIndex = ref(0);
-const changeBtnIndex = (index) => {
+const changeBtnIndex = async (index) => {
   reservationIndex.value = index;
   if (index === 0) {
-    list.value = psychotherapists.value;
+    list.value = await findPsychotherapists;
   } else {
     list.value = reservations.value;
   }
@@ -33,9 +49,9 @@ const searchKeyword = ref({
   keyword: "",
 });
 
-const search = () => {
+const search = async () => {
   if (reservationIndex.value === 0) {
-    list.value = psychotherapists.value.filter((account) => account.username.includes(searchKeyword.value.keyword));
+    list.value = await findPsychotherapists().filter((account) => account.username.includes(searchKeyword.value.keyword));
   } else {
     list.value = reservations.value.filter((reservation) => reservation.psychotherapist.includes(searchKeyword.value.keyword));
   }
@@ -46,7 +62,7 @@ const setReservationPsychotherapists = (username) => {
 }
 
 const currentAccount = computed(() => {
-  return JSON.parse(localStorage.getItem("currentAccount") || '{"username": "", "password": ""}');
+  return JSON.parse(localStorage.getItem("currentAccount") || '{"username": ""}');
 });
 
 const reservationData = ref({
