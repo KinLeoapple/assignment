@@ -1,19 +1,34 @@
 <script setup>
 import {computed, ref} from "vue";
+import {collection, getDocs, query, where} from "firebase/firestore";
+import db from "@/firebase/db.js";
 
 const psychotherapistReservationBtn = ["Reservations"];
 
 const currentAccount = computed(() => {
-  return JSON.parse(localStorage.getItem("currentAccount") || '{"username": "", "password": ""}');
+  return JSON.parse(localStorage.getItem("currentAccount") || '{"username": ""}');
 });
 
 // find all related reservations
-const reservations = computed(() => {
-  return JSON.parse(localStorage.getItem("reservations") || '[]')
-      .filter(reservation => reservation.psychotherapist === currentAccount.value.username);
-});
+const findReservations = async () => {
+  try {
+    const q = query(collection(db, "reservations"), where("psychotherapist", "==", currentAccount.value.username));
+    const psychotherapists = await getDocs(q);
+    let list = [];
+    psychotherapists.forEach(p => {
+      list.push({
+        username: p.data().username,
+        role: p.data().role,
+        email: p.data().email,
+      })
+    });
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+}
 
-const list = ref(reservations.value);
+const list = ref(findReservations);
 
 const reservationIndex = ref(0);
 const changeBtnIndex = (index) => {
@@ -24,8 +39,8 @@ const searchKeyword = ref({
   keyword: "",
 });
 
-const search = () => {
-  list.value = reservations.value.filter((reservation) => reservation.member.includes(searchKeyword.value.keyword));
+const search = async () => {
+  list.value = await findReservations().filter((reservation) => reservation.member.includes(searchKeyword.value.keyword));
 }
 </script>
 
