@@ -6,14 +6,24 @@ import ReservationError from "@/components/ReservationError.vue";
 import RatingStar from "@/components/RatingStar.vue";
 import CheckSvg from "@/components/CheckSvg.vue";
 import WarningSvg from "@/components/WarningSvg.vue";
-import {collection, getDocs, query, where} from "firebase/firestore";
+import {addDoc, collection, getDocs, query, where} from "firebase/firestore";
 import db from "@/firebase/db.js";
 
 const memberReservationBtn = ["Make Reservation", "My Reservation"];
 
-const reservations = computed(() => {
-  return JSON.parse(localStorage.getItem("reservations") || '[]');
-});
+const findReservations = async () => {
+  try {
+    const q = query(collection(db, "reservations"));
+    const psychotherapists = await getDocs(q);
+    let list = [];
+    psychotherapists.forEach(p => {
+      list.push(p.data());
+    });
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+}
 
 const findPsychotherapists = async () => {
   try {
@@ -39,9 +49,9 @@ const reservationIndex = ref(0);
 const changeBtnIndex = async (index) => {
   reservationIndex.value = index;
   if (index === 0) {
-    list.value = await findPsychotherapists;
+    list.value = await findPsychotherapists();
   } else {
-    list.value = reservations.value;
+    list.value = await findReservations();
   }
 }
 
@@ -53,7 +63,7 @@ const search = async () => {
   if (reservationIndex.value === 0) {
     list.value = await findPsychotherapists().filter((account) => account.username.includes(searchKeyword.value.keyword));
   } else {
-    list.value = reservations.value.filter((reservation) => reservation.psychotherapist.includes(searchKeyword.value.keyword));
+    list.value = await findReservations().filter((reservation) => reservation.psychotherapist.includes(searchKeyword.value.keyword));
   }
 }
 
@@ -85,8 +95,8 @@ const validateDate = () => {
   }
 }
 
-const validateTime = (username) => {
-  const list = reservations.value.filter((reservation) => reservation.psychotherapist === username);
+const validateTime = async (username) => {
+  const list = await findReservations().filter((reservation) => reservation.psychotherapist === username);
   const bookings = list.filter((reservation) => reservation.date === reservationData.value.date && reservation.time === reservationData.value.time) || [];
   const date = new Date().toDateString();
   if (new Date(date + "T" + reservationData.value.time) - new Date() < 60 * 6 * 1000) { // Less than one hour
@@ -105,12 +115,15 @@ const makeReservation = () => {
 
   if (!reservationErrors.value.date && !reservationErrors.value.time) {
     try {
-      storeReservation();
-      clearForm();
-      nextTick(() => {
-        modalClose.value.click();
+      storeReservation().then(r => {
+        if (r) {
+          clearForm();
+          nextTick(() => {
+            modalClose.value.click();
+          });
+          location.reload();
+        }
       });
-      location.reload();
     } catch (_) {
 
     }
@@ -118,8 +131,16 @@ const makeReservation = () => {
 }
 
 const storeReservation = () => {
-  reservations.value.push(reservationData.value);
-  localStorage.setItem("reservations", JSON.stringify(reservations.value));
+  return new Promise(resolve => {
+    addDoc(collection(db, "reservations"), {
+      date: reservationData.value.date,
+      time: reservationData.value.time,
+      member: currentAccount.value.username,
+      psychotherapist: reservationData.value.psychotherapist
+    }).then(() => {
+      resolve(true);
+    });
+  })
 }
 
 const clearForm = () => {
@@ -129,9 +150,9 @@ const clearForm = () => {
   reservationData.value.psychotherapist = "";
 }
 
-const computeRating = (username) => {
+const computeRating = async (username) => {
   // compute the rating from each reservation
-  const list = reservations.value.filter((reservation) => reservation.psychotherapist === username);
+  const list = await findReservations().filter((reservation) => reservation.psychotherapist === username);
   let total = 0;
   for (const reservation of list) {
     total += reservation.rate || 0; // the number would be zero if the rate does not exist
