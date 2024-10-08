@@ -4,6 +4,10 @@ import AuthorizationError from "@/components/AuthorizationError.vue";
 import {computed, ref} from "vue";
 import {useRouter} from "vue-router";
 import {checkStr} from "@/assets/js/checkStr.js";
+import {getAuth, createUserWithEmailAndPassword} from "firebase/auth";
+import {sendEmail} from "@/assets/js/email.js";
+
+const auth = getAuth();
 
 const router = useRouter();
 
@@ -16,6 +20,7 @@ const accounts = computed(() => {
 const formData = ref({
   username: "",
   role: "",
+  email: "",
   password: "",
   confirmPassword: ""
 });
@@ -23,6 +28,7 @@ const formData = ref({
 const errors = ref({
   username: null,
   role: null,
+  email: null,
   password: null,
   confirmPassword: null
 });
@@ -42,6 +48,17 @@ const validateRole = () => {
     errors.value.role = "Must select one role";
   } else {
     errors.value.role = null;
+  }
+}
+
+const validateEmail = (blur) => {
+  let reg = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
+  if (blur) {
+    if (reg.test(formData.value.email)) {
+      errors.value.email = null;
+    } else {
+      errors.value.email = "Email not valid";
+    }
   }
 }
 
@@ -82,14 +99,27 @@ const validateConfirmPassword = (blur) => {
 const submitForm = () => {
   validateName(true);
   validateRole();
+  validateEmail(true);
   validatePassword(true);
   validateConfirmPassword(true);
 
-  if (!errors.value.username && !errors.value.role && !errors.value.password && !errors.value.confirmPassword) {
+  if (!errors.value.username &&
+      !errors.value.role &&
+      !errors.value.email &&
+      !errors.value.password &&
+      !errors.value.confirmPassword
+  ) {
     try {
-      storeAccount();
-      clearForm();
-      router.push("/login");
+      storeAccount().then(r => {
+        if (r) {
+          clearForm();
+          sendEmail(
+              formData.value.username,
+              "Congratulations! You have successfully created an account!",
+              formData.value.email);
+          router.push("/login");
+        }
+      });
     } catch (_) {
 
     }
@@ -97,17 +127,24 @@ const submitForm = () => {
 }
 
 const storeAccount = () => {
-  accounts.value.push({
-    username: formData.value.username,
-    role: formData.value.role,
-    password: formData.value.password,
+  return new Promise(resolve => {
+    createUserWithEmailAndPassword(auth, formData.value.email, formData.value.password)
+        .then(data => {
+          console.log("Firebase Register Successful!");
+          console.log(data.currentUser);
+          resolve(true);
+        })
+        .catch(error => {
+          console.log(error.code);
+          resolve(false);
+        });
   });
-  localStorage.setItem("accounts", JSON.stringify(accounts.value));
 }
 
 const clearForm = () => {
   formData.value.username = "";
   formData.value.role = "";
+  formData.value.email = "";
   formData.value.password = "";
   formData.value.confirmPassword = "";
 }
@@ -135,6 +172,15 @@ const clearForm = () => {
         <option value="2">Psychotherapist</option>
       </select>
       <AuthorizationError :error-msg="errors.role"/>
+    </div>
+    <!-- Email -->
+    <div class="row">
+      <label for="registerEmail" class="form-label">Password</label>
+      <input type="text" maxlength="30" class="form-control" id="registerEmail"
+             @blur="() => validateEmail(true)"
+             @input="() => validateEmail(false)"
+             v-model="formData.email">
+      <AuthorizationError :error-msg="errors.email"/>
     </div>
     <!-- Password -->
     <div class="row">
