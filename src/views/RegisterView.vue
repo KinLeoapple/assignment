@@ -1,21 +1,20 @@
 <script setup>
 import AuthorizationLinkBox from "@/components/AuthorizationLinkBox.vue";
 import AuthorizationError from "@/components/AuthorizationError.vue";
-import {computed, ref} from "vue";
+import {ref} from "vue";
 import {useRouter} from "vue-router";
 import {checkStr} from "@/assets/js/checkStr.js";
 import {getAuth, createUserWithEmailAndPassword} from "firebase/auth";
 import {sendEmail} from "@/assets/js/email.js";
+import {collection, addDoc, query, where, getDocs} from "firebase/firestore";
+import db from "@/firebase/db.js";
+import {hash} from "@/assets/js/hash.js";
 
 const auth = getAuth();
 
 const router = useRouter();
 
 document.head.getElementsByTagName("title")[0].innerText = checkStr("Register");
-
-const accounts = computed(() => {
-  return JSON.parse(localStorage.getItem("accounts") || "[]");
-});
 
 const formData = ref({
   username: "",
@@ -33,10 +32,21 @@ const errors = ref({
   confirmPassword: null
 });
 
-const validateName = (blur) => {
+const findUser = async (name) => {
+  try {
+    const q = query(collection(db, "users"), where("username", "==", "Leo"));
+    const users = await getDocs(q);
+    return users.size > 0
+  } catch (e) {
+    console.error(e);
+    return true;
+  }
+}
+
+const validateName = async (blur) => {
   if (formData.value.username.length < 3) {
     if (blur) errors.value.username = "Name must be at least 3 characters";
-  } else if (accounts.value.find((account) => account.username === formData.value.username) !== undefined) {
+  } else if (await findUser(formData.value.username) === true) {
     if (blur) errors.value.username = "Account already exists";
   } else {
     errors.value.username = null;
@@ -53,12 +63,10 @@ const validateRole = () => {
 
 const validateEmail = (blur) => {
   let reg = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
-  if (blur) {
-    if (reg.test(formData.value.email)) {
-      errors.value.email = null;
-    } else {
-      errors.value.email = "Email not valid";
-    }
+  if (!reg.test(formData.value.email)) {
+    if (blur) errors.value.email = "Email not valid";
+  } else {
+    errors.value.email = null;
   }
 }
 
@@ -112,12 +120,18 @@ const submitForm = () => {
     try {
       storeAccount().then(r => {
         if (r) {
-          clearForm();
-          sendEmail(
-              formData.value.username,
-              "Congratulations! You have successfully created an account!",
-              formData.value.email);
-          router.push("/login");
+          addDoc(collection(db, "users"), {
+            username: formData.value.username,
+            role: formData.value.role,
+            password: hash(formData.value.password),
+          }).then(() => {
+            clearForm();
+            sendEmail(
+                formData.value.username,
+                "Congratulations! You have successfully created an account!",
+                formData.value.email);
+            router.push("/login");
+          });
         }
       });
     } catch (_) {
@@ -136,6 +150,8 @@ const storeAccount = () => {
         })
         .catch(error => {
           console.log(error.code);
+          if (error.code.includes("email-already-in-use"))
+            errors.value.email = "Email already in use";
           resolve(false);
         });
   });
@@ -175,7 +191,7 @@ const clearForm = () => {
     </div>
     <!-- Email -->
     <div class="row">
-      <label for="registerEmail" class="form-label">Password</label>
+      <label for="registerEmail" class="form-label">Email</label>
       <input type="text" maxlength="30" class="form-control" id="registerEmail"
              @blur="() => validateEmail(true)"
              @input="() => validateEmail(false)"
