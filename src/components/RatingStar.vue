@@ -1,7 +1,10 @@
 <script setup>
 import StarFillSvg from "@/components/StarFillSvg.vue";
 import StarSvg from "@/components/StarSvg.vue";
-import {computed, ref} from "vue";
+import {ref} from "vue";
+import {collection, getDocs, query, updateDoc, doc} from "firebase/firestore";
+import db from "@/firebase/db.js";
+
 
 const props = defineProps({
   reservation: Object
@@ -11,9 +14,23 @@ const canBeRate = ref(new Date() > new Date(props.reservation.date + 'T' + props
 const hasRating = ref(props.reservation.rate !== undefined);
 const isHover = ref(new Array(5));
 
-const reservations = computed(() => {
-  return JSON.parse(localStorage.getItem("reservations") || '[]');
-});
+const findReservation = async () => {
+  try {
+    const q = query(collection(db, "reservations"));
+    const reservations = await getDocs(q);
+    reservations.forEach(p => {
+      if (p.data().psychotherapist === props.reservation.psychotherapist
+          && p.data().member === props.reservation.member
+          && p.data().date === props.reservation.date
+          && p.data().time === props.reservation.time) {
+        return p.data()
+      }
+    });
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
+}
 
 if (hasRating.value) {
   isHover.value.fill(true, 0, props.reservation.rate);
@@ -38,17 +55,19 @@ const mouseLeave = () => {
   }
 }
 
-const rating = (index) => {
+const rating = async (index) => {
   if (canBeRate.value && !hasRating.value) {
-    const findIndex = reservations.value.findIndex(reservation =>
-        reservation.psychotherapist === props.reservation.psychotherapist
-        && reservation.member === props.reservation.member
-        && reservation.date === props.reservation.date
-        && reservation.time === props.reservation.time);
-    props.reservation.rate = index + 1;
-    reservations.value[findIndex] = props.reservation;
-    localStorage.setItem("reservations", JSON.stringify(reservations.value));
-    hasRating.value = true;
+    const reservation = await findReservation();
+    if (reservation != null) {
+      await updateDoc(doc(db, "reservations", reservation.id), {
+        date: props.reservation.date,
+        time: props.reservation.time,
+        member: props.reservation.member,
+        psychotherapist: props.reservation.psychotherapist,
+        rate: index + 1
+      });
+      hasRating.value = true;
+    }
   }
 }
 </script>

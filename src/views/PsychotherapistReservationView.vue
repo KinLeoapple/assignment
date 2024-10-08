@@ -13,9 +13,9 @@ const currentAccount = computed(() => {
 const findReservations = async () => {
   try {
     const q = query(collection(db, "reservations"), where("psychotherapist", "==", currentAccount.value.username));
-    const psychotherapists = await getDocs(q);
+    const reservations = await getDocs(q);
     let list = [];
-    psychotherapists.forEach(p => {
+    reservations.forEach(p => {
       list.push({
         username: p.data().username,
         role: p.data().role,

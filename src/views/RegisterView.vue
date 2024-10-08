@@ -34,7 +34,7 @@ const errors = ref({
 
 const findUser = async (name) => {
   try {
-    const q = query(collection(db, "users"), where("username", "==", "Leo"));
+    const q = query(collection(db, "users"), where("username", "==", name));
     const users = await getDocs(q);
     return users.size > 0
   } catch (e) {
