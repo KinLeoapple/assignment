@@ -3,12 +3,21 @@ import AuthorizationLinkBox from "@/components/AuthorizationLinkBox.vue";
 import AuthorizationError from "@/components/AuthorizationError.vue";
 import {computed, ref} from "vue";
 import {checkStr} from "@/assets/js/checkStr.js";
+import {collection, getDocs, query, where} from "firebase/firestore";
+import db from "@/firebase/db.js";
 
 document.head.getElementsByTagName("title")[0].innerText = checkStr("Login");
 
-const accounts = computed(() => {
-  return JSON.parse(localStorage.getItem("accounts") || "[]");
-});
+const findUser = async (name) => {
+  try {
+    const q = query(collection(db, "users"), where("username", "==", "Leo"));
+    const users = await getDocs(q);
+    return users.size > 0
+  } catch (e) {
+    console.error(e);
+    return true;
+  }
+}
 
 const formData = ref({
   username: "",
@@ -20,10 +29,10 @@ const errors = ref({
   password: null
 });
 
-const validateName = (blur) => {
+const validateName = async (blur) => {
   if (formData.value.username.length < 3) {
     if (blur) errors.value.username = "Name must be at least 3 characters";
-  } else if (accounts.value.find((account) => account.username === formData.value.username) === undefined) {
+  } else if (await findUser(formData.value.username) === false) {
     if (blur) errors.value.username = "Account does not exists";
   } else {
     errors.value.username = null;
