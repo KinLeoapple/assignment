@@ -54,7 +54,7 @@ onMounted(() => {
       </div>
       <span>{{ weatherData.weather[0].description }}</span>
     </div>
-
+    <router-link class="btn btn-primary" to="/weather">More</router-link>
   </div>
 </template>
 
