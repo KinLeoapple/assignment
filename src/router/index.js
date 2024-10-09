@@ -9,6 +9,7 @@ import db from "@/firebase/db.js";
 import {getAuth, signInWithEmailAndPassword} from "firebase/auth";
 import MapView from "@/views/MapView.vue";
 import WeatherView from "@/views/WeatherView.vue";
+import AdminView from "@/views/AdminView.vue";
 
 const isLogin = () => {
     return new Promise((resolve) => {
@@ -85,6 +86,11 @@ const routes = [
         path: '/weather',
         name: 'Weather',
         component: WeatherView,
+    },
+    {
+        path: '/admin',
+        name: 'Admin',
+        component: AdminView,
     }
 ]
 
