@@ -3,6 +3,7 @@ import {computed, ref} from "vue";
 import blogImg from "@/assets/img/img.jpg";
 import blogsJson from "@/assets/blogs/blogs.json";
 import {useRouter} from "vue-router";
+import Weather from "@/components/Weather.vue";
 
 const router = useRouter();
 
@@ -17,7 +18,7 @@ const changeBlogs = (index) => {
 }
 
 const blogs = computed(() => {
-  let blogsJsonSlice = blogsJson.slice(0)
+  let blogsJsonSlice = blogsJson.slice(0, 5)
   if (blogsIndex.value === 0)
     return blogsJsonSlice.sort((a, b) => new Date(b.date) - new Date(a.date));
   else if (blogsIndex.value === 1)
@@ -74,6 +75,9 @@ const buildPreviewText = (text) => {
           </div>
         </div>
       </div>
+    </div>
+    <div class="col-3">
+      <Weather/>
     </div>
   </div>
 </template>
