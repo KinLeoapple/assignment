@@ -8,6 +8,7 @@ import CheckSvg from "@/components/CheckSvg.vue";
 import WarningSvg from "@/components/WarningSvg.vue";
 import {addDoc, collection, getDocs, query, where} from "firebase/firestore";
 import db from "@/firebase/db.js";
+import axios from "axios";
 
 const memberReservationBtn = ["Make Reservation", "My Reservation"];
 
@@ -19,6 +20,7 @@ const findReservations = async () => {
     psychotherapists.forEach(p => {
       list.push(p.data());
     });
+    return list;
   } catch (e) {
     console.error(e);
     return [];
@@ -29,6 +31,7 @@ const findPsychotherapists = async () => {
   try {
     const q = query(collection(db, "users"), where("role", "==", "2"));
     const psychotherapists = await getDocs(q);
+    console.log(psychotherapists.size);
     let list = [];
     psychotherapists.forEach(p => {
       list.push({
@@ -37,13 +40,15 @@ const findPsychotherapists = async () => {
         email: p.data().email,
       })
     });
+    console.log(list);
+    return list;
   } catch (e) {
     console.error(e);
     return [];
   }
 }
 
-const list = ref(findPsychotherapists);
+const list = ref();
 
 const reservationIndex = ref(0);
 const changeBtnIndex = async (index) => {
@@ -164,6 +169,24 @@ const computeRating = async (username) => {
     return new Array(5);
   }
 }
+
+const reservationCount = ref(0);
+// cloud function
+const getReservationCount = async () => {
+  try {
+    const response = await axios.get("https://countbooks-q2pvqpvzbq-uc.a.run.app?member=" + currentAccount.value.username);
+    reservationCount.value = response.data.count;
+  } catch (error) {
+    console.error("Error fetching book count:", error);
+    reservationCount.value = 0;
+  }
+}
+
+nextTick(async () => {
+  await changeBtnIndex();
+  await getReservationCount();
+})
+
 </script>
 
 <template>
@@ -194,7 +217,7 @@ const computeRating = async (username) => {
   <!-- Psychotherapists List or My Reservations List -->
   <div class="container-fluid border rounded p-2 d-flex flex-column">
     <h1 v-if="reservationIndex === 0" class="font-monospace">Psychotherapists</h1>
-    <h1 v-else class="font-monospace">My Reservations</h1>
+    <h1 v-else class="font-monospace">My Reservations | <span>Total: {{ reservationCount }}</span></h1>
     <div class="container d-flex flex-column">
       <div v-for="item in list"
            class="row justify-content-between overflow-hidden bg-body-secondary rounded mb-3 p-2">

@@ -59,9 +59,12 @@ const submitForm = async () => {
     try {
       tryLogin().then(r => {
         if (r) {
-          storeCurrentAccount();
-          clearForm();
-          window.location.replace("/");
+          storeCurrentAccount().then(res => {
+            if (res) {
+              clearForm();
+              window.location.replace("/");
+            }
+          });
         } else {
           errors.value.email = "Login failed";
           errors.value.password = "Login failed";
@@ -91,15 +94,19 @@ const storeCurrentAccount = async () => {
   try {
     const q = query(collection(db, "users"), where("email", "==", formData.value.email));
     const emails = await getDocs(q);
+    let isLog = false;
     emails.forEach(email => {
-      if (email.data().email === formData.value.email) {
+      if (email.data().email == formData.value.email) {
         localStorage.setItem("currentAccount", JSON.stringify({
-            username:email.data().username
+          "username": email.data().username
         }));
+        isLog = true;
       }
     });
+    return isLog;
   } catch (e) {
     console.error(e);
+    return false;
   }
 }
 
