@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
+    "@mapbox/search-js-web": "^1.0.0-beta.22",
     "axios": "^1.7.7",
     "bootstrap": "^5.3.3",
     "cors": "^2.8.5",
@@ -27,6 +28,7 @@
     "firebase-tools": "^13.21.0",
     "jquery": "^3.7.1",
     "js-md5": "^0.8.3",
+    "mapbox-gl": "^3.7.0",
     "pdfmake": "^0.2.13",
     "vue": "^3.4.29",
     "vue-router": "^4.4.3"

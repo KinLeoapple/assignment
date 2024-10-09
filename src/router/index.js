@@ -7,6 +7,7 @@ import BlogView from "@/views/BlogView.vue";
 import {collection, getDocs, query, where} from "firebase/firestore";
 import db from "@/firebase/db.js";
 import {getAuth, signInWithEmailAndPassword} from "firebase/auth";
+import MapView from "@/views/MapView.vue";
 
 const isLogin = () => {
     return new Promise((resolve) => {
@@ -73,6 +74,11 @@ const routes = [
         path: '/blogs',
         name: 'Blogs',
         component: BlogView
+    },
+    {
+        path: '/map',
+        name: 'Map',
+        component: MapView
     }
 ]
 
