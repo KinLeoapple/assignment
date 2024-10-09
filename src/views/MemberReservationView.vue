@@ -31,7 +31,6 @@ const findPsychotherapists = async () => {
   try {
     const q = query(collection(db, "users"), where("role", "==", "2"));
     const psychotherapists = await getDocs(q);
-    console.log(psychotherapists.size);
     let list = [];
     psychotherapists.forEach(p => {
       list.push({

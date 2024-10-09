@@ -21,6 +21,7 @@
     "datatables.net-responsive-dt": "^3.0.3",
     "datatables.net-select-dt": "^2.1.0",
     "datatables.net-vue3": "^3.0.2",
+    "echarts": "^5.5.1",
     "express": "^4.21.1",
     "firebase": "^10.14.0",
     "firebase-admin": "^12.6.0",
