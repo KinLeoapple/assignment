@@ -44,7 +44,7 @@ const routes = [
     {
         path: '/',
         name: 'Home',
-        component: HomeView
+        component: HomeView,
     },
     {
         path: '/reservation',
@@ -63,22 +63,22 @@ const routes = [
     {
         path: '/login',
         name: 'Login',
-        component: LoginView
+        component: LoginView,
     },
     {
         path: '/register',
         name: 'Register',
-        component: RegisterView
+        component: RegisterView,
     },
     {
         path: '/blogs',
         name: 'Blogs',
-        component: BlogView
+        component: BlogView,
     },
     {
         path: '/map',
         name: 'Map',
-        component: MapView
+        component: MapView,
     }
 ]
 

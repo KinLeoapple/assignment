@@ -16,6 +16,10 @@ const headerLeftBtn = [
   {
     text: "Reservation",
     path: "/reservation"
+  },
+  {
+    text: "Map",
+    path: "/map"
   }
 ];
 const headerRightBtn = [

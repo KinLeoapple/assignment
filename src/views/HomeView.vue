@@ -4,6 +4,7 @@ import HomeBlogList from "@/components/HomeBlogList.vue";
 import {checkStr} from "@/assets/js/checkStr.js";
 
 document.head.getElementsByTagName("title")[0].innerText = checkStr("Home");
+
 </script>
 
 <template>
