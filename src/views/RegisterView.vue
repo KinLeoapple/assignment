@@ -130,11 +130,11 @@ const submitForm = async () => {
               username: formData.value.username,
               heartbeat: new Date().getTime(),
             }).then(() => {
-              clearForm();
               sendEmail(
                   formData.value.username,
                   "Congratulations! You have successfully created an account!",
                   formData.value.email);
+              clearForm();
               router.push("/login");
             })
           });
