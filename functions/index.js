@@ -13,7 +13,7 @@ const cors = require("cors")({origin: true});
 
 admin.initializeApp();
 
-exports.countBooks = onRequest((req, res) => {
+exports.countReservations = onRequest((req, res) => {
     cors(req, res, async () => {
         try {
             const booksCollection = admin.firestore().collection("reservations");
