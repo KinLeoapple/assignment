@@ -9,21 +9,38 @@ import WarningSvg from "@/components/WarningSvg.vue";
 import {addDoc, collection, getDocs, query, where} from "firebase/firestore";
 import db from "@/firebase/db.js";
 import axios from "axios";
+import {checkOnline} from "../assets/js/checkOnline.js";
 
 const memberReservationBtn = ["Make Reservation", "My Reservation"];
 
+const onlineList = ref([]);
 const findReservations = async () => {
   try {
-    const q = query(collection(db, "reservations"));
+    const q = query(collection(db, "reservations"), where("member", "==", currentAccount.value.username));
     const psychotherapists = await getDocs(q);
     let list = [];
     psychotherapists.forEach(p => {
-      list.push(p.data());
+      list.push({
+        date: p.data().date,
+        member: p.data().member,
+        psychotherapist: p.data().psychotherapist,
+        time: p.data().time,
+      });
     });
+    localStorage.setItem("reservations", JSON.stringify(list));
+    for (let i = 0; i < list.length; i++) {
+      let isOnline = await checkOnline(list[i].psychotherapist);
+      onlineList.value.push({
+        username: list[i].psychotherapist,
+        isOnline: isOnline,
+      });
+    }
     return list;
   } catch (e) {
     console.error(e);
-    return [];
+    let list = localStorage.getItem("reservations");
+    if (list) return list;
+    else return [];
   }
 }
 
@@ -39,7 +56,6 @@ const findPsychotherapists = async () => {
         email: p.data().email,
       })
     });
-    console.log(list);
     return list;
   } catch (e) {
     console.error(e);
@@ -100,7 +116,7 @@ const validateDate = () => {
 }
 
 const validateTime = async (username) => {
-  const list = await findReservations().filter((reservation) => reservation.psychotherapist === username);
+  const list = (await findReservations()).filter((reservation) => reservation.psychotherapist === username);
   const bookings = list.filter((reservation) => reservation.date === reservationData.value.date && reservation.time === reservationData.value.time) || [];
   const date = new Date().toDateString();
   if (new Date(date + "T" + reservationData.value.time) - new Date() < 60 * 6 * 1000) { // Less than one hour
@@ -156,7 +172,7 @@ const clearForm = () => {
 
 const computeRating = async (username) => {
   // compute the rating from each reservation
-  const list = await findReservations().filter((reservation) => reservation.psychotherapist === username);
+  const list = (await findReservations()).filter((reservation) => reservation.psychotherapist === username);
   let total = 0;
   for (const reservation of list) {
     total += reservation.rate || 0; // the number would be zero if the rate does not exist
@@ -179,20 +195,6 @@ const getReservationCount = async () => {
     console.error("Error fetching book count:", error);
     reservationCount.value = 0;
   }
-}
-
-const checkOnline = async (name) => {
-  const q = query(collection(db, "session"), where("username", "==", name));
-  const sessions = await getDocs(q);
-  let isOnline = false;
-  sessions.forEach((session) => {
-    if (session.data().username === currentAccount.value.username) {
-      let now = new Date().getTime();
-      let pass = Number(session.data().heartbeat);
-      isOnline = (now - pass) <= 5 * 60 * 1000; // offline if more than 5 min
-    }
-  });
-  return isOnline;
 }
 
 nextTick(async () => {
@@ -232,11 +234,13 @@ nextTick(async () => {
     <h1 v-if="reservationIndex === 0" class="font-monospace">Psychotherapists</h1>
     <h1 v-else class="font-monospace">My Reservations | <span>Total: {{ reservationCount }}</span></h1>
     <div class="container d-flex flex-column">
-      <div v-for="item in list"
+      <div v-for="(item,index) in list"
            class="row justify-content-between overflow-hidden bg-body-secondary rounded mb-3 p-2">
         <div class="col">
           <div class="card-body">
-            <h5 v-if="reservationIndex === 0" class="mt-2 text-truncate font-monospace">{{ item.username }}</h5>
+            <h5 v-if="reservationIndex === 0" class="mt-2 text-truncate font-monospace">{{ item.username }}
+              {{ onlineList[index].isOnline ? "Online" : "Offline" }}
+            </h5>
             <h5 v-else class="mt-2 text-truncate font-monospace">{{ item.psychotherapist }}</h5>
             <!-- Display Date Time -->
             <p v-if="reservationIndex === 1">{{ new Date(item.date + "T" + item.time).toLocaleString() }}</p>
