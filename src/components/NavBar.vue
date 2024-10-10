@@ -80,7 +80,7 @@ const sendHeartBeat = async () => {
       if (session.data().username === currentAccount.value.username) {
         updateDoc(doc(db, "session", session.id), {
           username: session.data().username,
-          heartbeat: Date.now(),
+          heartbeat: new Date().getTime(),
         });
       }
     });

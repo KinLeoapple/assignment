@@ -128,7 +128,7 @@ const submitForm = async () => {
           }).then(() => {
             addDoc(collection(db, "session"), {
               username: formData.value.username,
-              heartbeat: Date.now(),
+              heartbeat: new Date().getTime(),
             }).then(() => {
               clearForm();
               sendEmail(

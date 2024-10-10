@@ -181,6 +181,20 @@ const getReservationCount = async () => {
   }
 }
 
+const checkOnline = async (name) => {
+  const q = query(collection(db, "session"), where("username", "==", name));
+  const sessions = await getDocs(q);
+  let isOnline = false;
+  sessions.forEach((session) => {
+    if (session.data().username === currentAccount.value.username) {
+      let now = new Date().getTime();
+      let pass = Number(session.data().heartbeat);
+      isOnline = (now - pass) <= 5 * 60 * 1000; // offline if more than 5 min
+    }
+  });
+  return isOnline;
+}
+
 nextTick(async () => {
   await changeBtnIndex();
   await getReservationCount();
