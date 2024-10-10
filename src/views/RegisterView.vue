@@ -126,12 +126,17 @@ const submitForm = async () => {
             email: formData.value.email,
             password: hash(formData.value.password),
           }).then(() => {
-            clearForm();
-            sendEmail(
-                formData.value.username,
-                "Congratulations! You have successfully created an account!",
-                formData.value.email);
-            router.push("/login");
+            addDoc(collection(db, "session"), {
+              username: formData.value.username,
+              heartbeat: Date.now(),
+            }).then(() => {
+              clearForm();
+              sendEmail(
+                  formData.value.username,
+                  "Congratulations! You have successfully created an account!",
+                  formData.value.email);
+              router.push("/login");
+            })
           });
         }
       });

@@ -101,6 +101,10 @@ async function getUserData() {
     {value: members.size, name: 'Member'},
   ]
 }
+
+onMounted(() => {
+  localStorage.removeItem("currentAccount");
+});
 </script>
 
 <template>

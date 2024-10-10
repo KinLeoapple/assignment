@@ -2,7 +2,7 @@
 import logo from "@/assets/logo.png";
 import {computed, onMounted, ref} from "vue";
 import {useRouter} from "vue-router";
-import {collection, getDocs, query, where} from "firebase/firestore";
+import {collection, doc, getDocs, query, updateDoc, where} from "firebase/firestore";
 import db from "@/firebase/db.js";
 import {getAuth, signInWithEmailAndPassword} from "firebase/auth";
 
@@ -36,7 +36,7 @@ const accounts = computed(() => {
 });
 
 const currentAccount = computed(() => {
-  return JSON.parse(localStorage.getItem("currentAccount") || '{"username": "", "password": ""}');
+  return JSON.parse(localStorage.getItem("currentAccount") || '{"username": ""}');
 });
 
 const tryLogin = async () => {
@@ -72,8 +72,26 @@ const logout = () => {
   router.push("/");
 }
 
+const sendHeartBeat = async () => {
+  if (currentAccount.value.name !== null && currentAccount.value.name !== "") {
+    const q = query(collection(db, "session"), where("username", "==", currentAccount.value.username));
+    const sessions = await getDocs(q);
+    sessions.forEach((session) => {
+      if (session.data().username === currentAccount.value.username) {
+        updateDoc(doc(db, "session", session.id), {
+          username: session.data().username,
+          heartbeat: Date.now(),
+        });
+      }
+    });
+  }
+}
+
 onMounted(() => {
   tryLogin();
+  setInterval(async () => {
+    await sendHeartBeat();
+  }, 5 * 60 * 1000); // 5 min
 });
 </script>
 
