@@ -124,7 +124,7 @@ const clearForm = () => {
     <!-- Email -->
     <div class="row">
       <label for="loginName" class="form-label">Email</label>
-      <input type="text" maxlength="20" class="form-control" id="loginName"
+      <input type="text" maxlength="100" class="form-control" id="loginName"
              @blur="() => validateEmail(true)"
              @input="() => validateEmail(false)"
              v-model="formData.email">
