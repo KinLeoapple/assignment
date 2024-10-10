@@ -30,7 +30,7 @@ const cities = [
 ]
 
 const fetchLocationWeather = async (latitude, longitude) => {
-  const url = `http://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apikey}`;
+  const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apikey}`;
   await fetchWeatherData(url);
 }
 

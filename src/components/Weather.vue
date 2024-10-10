@@ -14,7 +14,7 @@ const temperature = computed(() => {
 
 const iconUrl = computed(() => {
   return weatherData.value
-      ? `http://api.openweathermap.org/img/w/${weatherData.value.weather[0].icon}.png`
+      ? `https://api.openweathermap.org/img/w/${weatherData.value.weather[0].icon}.png`
       : null;
 });
 
@@ -22,7 +22,7 @@ const fetchCurrentLocationWeather = async () => {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(async (position) => {
       const {latitude, longitude} = position.coords;
-      const url = `http://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apikey}`;
+      const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apikey}`;
       await fetchWeatherData(url);
     });
   }
